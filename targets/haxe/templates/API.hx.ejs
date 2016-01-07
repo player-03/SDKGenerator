@@ -1,0 +1,51 @@
+package com.playfab;
+
+import com.playfab.<%- api.name.toLowerCase() %>models.*;
+import flash.errors.Error;
+import haxe.Json;
+
+class PlayFab<%- api.name %>API
+{
+<% for(var i in api.calls) { var apiCall = api.calls[i]; %>	public static function <%- apiCall.name %>(request:<%- apiCall.request %>, ?onComplete:<%- apiCall.result %> -> Void, ?onError:PlayFabError -> Void):Void
+	{
+<%- getRequestActions(apiCall, api) %>
+		var requetJson:String = Json.stringify( request );
+		
+		var onPostComplete:<%- apiCall.result %> -> PlayFabError -> Void = function(resultData:<%- apiCall.result %>, error:PlayFabError):Void
+		{
+			if(error != null)
+			{
+				if(onError != null)
+					onError(error);
+				if(PlayFabSettings.GlobalErrorHandler != null)
+					PlayFabSettings.GlobalErrorHandler(error);
+			}
+			else
+			{
+<%- getResultActions(apiCall, api) %>
+				if(onComplete != null)
+					onComplete(resultData);
+			}
+		}
+		
+		PlayFabHTTP.post(<%- getUrlAccessor(apiCall) %>+"<%- apiCall.url %>", requetJson, <%- getAuthParams(apiCall) %>, onPostComplete);
+	}
+	
+<% } %><% if (hasClientOptions) { %>	public static function MultiStepClientLogin(needsAttribution:Bool):Void
+	{
+		if (needsAttribution && !PlayFabSettings.DisableAdvertising && (PlayFabSettings.AdvertisingIdType != null && PlayFabSettings.AdvertisingIdType != "") && (PlayFabSettings.AdvertisingIdValue != null && PlayFabSettings.AdvertisingIdValue != ""))
+		{
+			var request:AttributeInstallRequest = {};
+			if (PlayFabSettings.AdvertisingIdType == PlayFabSettings.AD_TYPE_IDFA)
+				request.Idfa = PlayFabSettings.AdvertisingIdValue;
+			else if (PlayFabSettings.AdvertisingIdType == PlayFabSettings.AD_TYPE_ANDROID_ID)
+				request.Android_Id = PlayFabSettings.AdvertisingIdValue;
+			else
+				return;
+			AttributeInstall(request, null, null);
+		}
+	}
+
+	private static var authKey:String = null;
+<% } %>
+}

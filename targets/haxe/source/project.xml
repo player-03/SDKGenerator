@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+	
+	<meta title="PlayFab API Test" package="samples.openfl.PfApiTest" />
+	<app main="PfApiTest" path="Export" file="PFApiTest" />
+	
+	<source path="." />
+	
+	<haxelib name="openfl" />
+	
+</project>
