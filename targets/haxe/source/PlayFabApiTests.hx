@@ -22,8 +22,6 @@ import haxe.Json;
 
 class PlayFabApiTests extends ASyncUnitTestSuite
 {
-	private static var TITLE_DATA_FILENAME:String;
-	
 	private static inline var TEST_STAT_BASE:Int = 10;
 	private static inline var TEST_STAT_NAME:String = "str";
 	private static inline var CHAR_TEST_TYPE:String = "Test";
@@ -48,10 +46,10 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 	private var testIntExpected:Int;
 	private var testIntActual:Int;
 	
-	public function new(titleDataFileName:String, reporter:ASyncUnitTestReporter)
+	public function new(testTitleData:Dynamic, reporter:ASyncUnitTestReporter)
 	{
 		super(reporter);
-		TITLE_DATA_FILENAME = titleDataFileName;
+		SetTitleInfo(testTitleData);
 		
 		AddTest("InvalidLogin", InvalidLogin);
 		AddTest("LoginOrRegister", LoginOrRegister);
@@ -68,14 +66,6 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 	
 	override private function SuiteSetUp() : Void
 	{
-		var myTextLoader:URLLoader = new URLLoader();
-		myTextLoader.addEventListener(Event.COMPLETE, Wrap1(OnTitleDataLoaded, "TitleData"));
-		myTextLoader.load(new URLRequest(TITLE_DATA_FILENAME));
-	}
-	
-	private function OnTitleDataLoaded(event:Event) : Void
-	{
-		SetTitleInfo(event.target.data);
 		SuiteSetUpCompleteHandler();
 	}
 	
@@ -83,10 +73,8 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 	/// PlayFab Title cannot be created from SDK tests, so you must provide your titleId to run unit tests.
 	/// (Also, we don't want lots of excess unused titles)
 	/// </summary>
-	private static function SetTitleInfo(titleDataString):Bool
+	private static function SetTitleInfo(testTitleData:Dynamic):Bool
 	{
-		var testTitleData:Dynamic = Json.parse(titleDataString);
-		
 		PlayFabSettings.TitleId = testTitleData.titleId;
 		PlayFabSettings.DeveloperSecretKey = testTitleData.developerSecretKey;
 		TITLE_CAN_UPDATE_SETTINGS = testTitleData.titleCanUpdateSettings.toLowerCase() == "true";

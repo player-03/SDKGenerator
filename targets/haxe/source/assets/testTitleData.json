@@ -1,0 +1,9 @@
+{
+    "titleId": "your Game Title ID, found in the settings/credentials section of your dashboard on the website",
+    "developerSecretKey": "your PlayFab API Secret Key, found in the settings/credentials section of your dashboard on the website - NEVER SHARE THIS KEY WITH PLAYERS",
+    "titleCanUpdateSettings": "'true' or 'false', based on your Allow Client to Post Player Statistics option, found in the settings/general section of your dashboard on the website",
+    "userName": "arbitrary username, you can change this to any valid username",
+    "userEmail": "this email address will be bound to the username above",
+    "userPassword": "this must be the correct password for the testUser above (if that user does not exist yet, this will be the new password)",
+    "characterName": "arbitrary characterName, you can change this to any valid characterName"
+}

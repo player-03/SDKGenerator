@@ -2,9 +2,11 @@
 <project>
 	
 	<meta title="PlayFab API Test" package="samples.openfl.PfApiTest" />
-	<app main="PfApiTest" path="Export" file="PFApiTest" />
+	<app main="PfApiTest" path="export" file="PFApiTest" />
 	
 	<source path="." />
+	
+	<assets path="assets" />
 	
 	<haxelib name="openfl" />
 	
