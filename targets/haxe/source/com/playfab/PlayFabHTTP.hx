@@ -35,7 +35,7 @@ class PlayFabHTTP
 		{
 			gotHttpStatus = event.status;
 		}
-
+		
 		var onSuccess:Event -> Void = function(event:Event):Void
 		{
 			cleanup();

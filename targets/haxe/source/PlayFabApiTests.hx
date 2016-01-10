@@ -28,8 +28,6 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 	private static inline var TEST_DATA_KEY:String = "testCounter";
 	
 	// Functional
-	private static var EXEC_ONCE:Bool = true;
-	private static var TITLE_INFO_SET:Bool = false;
 	private static var TITLE_CAN_UPDATE_SETTINGS:Bool = false;
 	
 	// Fixed values provided from testInputs
@@ -73,7 +71,7 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 	/// PlayFab Title cannot be created from SDK tests, so you must provide your titleId to run unit tests.
 	/// (Also, we don't want lots of excess unused titles)
 	/// </summary>
-	private static function SetTitleInfo(testTitleData:Dynamic):Bool
+	private static function SetTitleInfo(testTitleData:Dynamic):Void
 	{
 		PlayFabSettings.TitleId = testTitleData.titleId;
 		PlayFabSettings.DeveloperSecretKey = testTitleData.developerSecretKey;
@@ -82,16 +80,6 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 		USER_EMAIL = testTitleData.userEmail;
 		USER_PASSWORD = testTitleData.userPassword;
 		CHAR_NAME = testTitleData.characterName;
-		
-		TITLE_INFO_SET = PlayFabSettings.TitleId != null
-			|| PlayFabSettings.TitleId != null
-			|| PlayFabSettings.DeveloperSecretKey != null
-			|| TITLE_CAN_UPDATE_SETTINGS
-			|| USER_NAME != null
-			|| USER_EMAIL != null
-			|| USER_PASSWORD != null
-			|| CHAR_NAME != null;
-		return TITLE_INFO_SET;
 	}
 	
 	/// <summary>
@@ -105,7 +93,7 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 		var request:com.playfab.clientmodels.LoginWithEmailAddressRequest = {
 			TitleId : PlayFabSettings.TitleId,
 			Email : USER_EMAIL,
-			Password : USER_PASSWORD + "INVALID"
+			Password : USER_PASSWORD.length > 20 ? USER_PASSWORD.substr(5) : USER_PASSWORD + "INVALID"
 		};
 		PlayFabClientAPI.LoginWithEmailAddress(request, Wrap1(InvalidLogin_Success, "Success"), Wrap1(InvalidLogin_Failure, "Fail"));
 	}

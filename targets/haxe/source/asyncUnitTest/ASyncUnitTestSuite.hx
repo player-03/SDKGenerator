@@ -162,7 +162,7 @@ class ASyncUnitTestSuite extends Sprite
 	// This can be called directly, or posted as an event
 	private function FinishTestHandler(event:ASyncUnitTestEvent) : Void
 	{
-		if (activeState == ASyncUnitTestEvent.STATE_TIMED_OUT)
+		if (activeState == ASyncUnitTestEvent.STATE_TIMED_OUT || activeTest == null)
 			return;
 		
 		TickTestHandler();
