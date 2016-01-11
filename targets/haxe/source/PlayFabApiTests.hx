@@ -12,6 +12,7 @@ import com.playfab.PlayFabServerAPI;
 import com.playfab.PlayFabSettings;
 import com.playfab.PlayFabHTTP;
 import com.playfab.PlayFabError;
+import com.playfab.PlayFabUtil;
 
 import asyncUnitTest.ASyncUnitTestSuite;
 import asyncUnitTest.ASyncUnitTestEvent;
