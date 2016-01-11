@@ -238,7 +238,7 @@ class PlayFabApiTests extends ASyncUnitTestSuite
 		testIntActual = Reflect.field(result.Data, TEST_DATA_KEY).Value;
 		ASyncAssert.AssertEquals(testIntExpected, testIntActual);
 		
-		var timeUpdated:Float = Date.fromString(Reflect.field(result.Data, TEST_DATA_KEY).LastUpdated).getTime();
+		var timeUpdated:Float = PlayFabUtil.parseDate(Reflect.field(result.Data, TEST_DATA_KEY).LastUpdated).getTime();
 		var now:Float = Date.now().getTime();
 		var testMin:Float = now - (5*60*1000);
 		var testMax:Float = now + (5*60*1000);
