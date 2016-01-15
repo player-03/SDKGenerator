@@ -23,7 +23,7 @@ class PlayFabUtil
 		var second:Int = Std.parseInt(TimePattern.matched(6));
 		
 		//Retrieve the local time zone.
-		var timeZoneOffset:Float = Date.fromString("1970-01-01").getTime();
+		var timeZoneOffset:Float = new Date(1970, 0, 1, 0, 0, 0).getTime();
 		
 		var timeZoneString:String = TimePattern.matched(7);
 		if(timeZoneString != "" && timeZoneString != "Z")
