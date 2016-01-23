@@ -116,7 +116,21 @@ function getModelPropertyDef(property, datatype) {
 	if (property.optional)
 		prefix = "@:optional var ";
 	
-	return prefix + property.name + ":" + type + ";";
+	var comment = "";
+	if (property.description) {
+		comment = "/**";
+		var lineLength = 80;
+		var line = "";
+		for (var i = 0; i < property.description.length; i += line.length + 1) {
+			line = property.description.substr(i, lineLength);
+			if (line.length == lineLength)
+				line = line.substr(0, line.lastIndexOf(" "));
+			comment += "\n\t * " + line;
+		}
+		comment += "\n\t */\n\t";
+	}
+	
+	return comment + prefix + property.name + ":" + type + ";";
 }
 
 function getPropertyASType(property, datatype) {
