@@ -11,7 +11,7 @@ class PlayFab<%- api.name %>API
 <%- getRequestActions(apiCall, api) %>
 		var requetJson:String = Json.stringify( request );
 		
-		var onPostComplete:<%- apiCall.result %> -> PlayFabError -> Void = function(resultData:<%- apiCall.result %>, error:PlayFabError):Void
+		var onPostComplete:Dynamic -> PlayFabError -> Void = function(resultData:Dynamic, error:PlayFabError):Void
 		{
 			if(error != null)
 			{
@@ -22,9 +22,10 @@ class PlayFab<%- api.name %>API
 			}
 			else
 			{
-<%- getResultActions(apiCall, api) %>
+				var result:<%- apiCall.result %> = new <%- apiCall.result %>(resultData);
+<%- getResultActions(apiCall, api) %>				
 				if(onComplete != null)
-					onComplete(resultData);
+					onComplete(result);
 			}
 		}
 		

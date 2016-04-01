@@ -28,6 +28,7 @@ function makeDatatypes(api, sourceDir, apiOutputDir) {
 		modelLocals.api = api;
 		modelLocals.datatype = datatype;
 		modelLocals.getPropertyDef = getModelPropertyDef;
+        modelLocals.getPropertyInit = getModelPropertyInit;
 		var generatedModel = null;
 		
 		if (datatype.isenum) {
@@ -98,23 +99,19 @@ function generateSimpleFiles(apis, sourceDir, apiOutputDir) {
 }
 
 function getModelPropertyDef(property, datatype) {
-	var type = getPropertyASType(property, datatype);
+	var type = getPropertyHXType(property, datatype);
 	
 	if (property.collection) {
 		if (property.collection === "array") {
 			type = "Array<" + type + ">";
 		}
 		else if (property.collection === "map") {
-			type = "Dynamic";
+			type = "Map<String, " + type + ">";
 		}
 		else {
 			throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
 		}
 	}
-	
-	var prefix = "var ";
-	if (property.optional)
-		prefix = "@:optional var ";
 	
 	var comment = "";
 	if (property.description) {
@@ -130,10 +127,43 @@ function getModelPropertyDef(property, datatype) {
 		comment += "\n\t */\n\t";
 	}
 	
-	return comment + prefix + property.name + ":" + type + ";";
+	return comment + "var " + property.name + ":" + type + ";";
 }
 
-function getPropertyASType(property, datatype) {
+function getModelPropertyInit(property, datatype) {
+    if (property.isclass) {
+        if (property.collection) {
+            if (property.collection === "array")
+                return "if(data." + property.name + " != null) " + property.name + " = [for(object in data." + property.name + ") new " + property.actualtype + "(object)];";
+            else if (property.collection === "map")
+                return "if(data." + property.name + " != null) " + property.name + " = [for(field in Reflect.fields(data." + property.name + ")) field => new " + property.actualtype + "(Reflect.field(data." + property.name + ", field))];";
+            else
+                throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
+        }
+        else {
+            return property.name + " = new " + property.actualtype + "(data." + property.name + ");";
+        }
+    }
+    else if (property.collection) {
+        if (property.collection === "array") {
+            return property.name + " = data." + property.name + ";";
+        }
+        else if (property.collection === "map") {
+            return "if(data." + property.name + " != null) " + property.name + " = [for(field in Reflect.fields(data." + property.name + ")) field => Reflect.field(data." + property.name + ", field)];";
+        }
+        else {
+            throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
+        }
+    }
+    else if (property.actualtype === "DateTime") {
+        return property.name + " = PlayFabUtil.parseDate(data." + property.name + ");";
+    }
+    else {
+        return property.name + " = data." + property.name + ";";
+    }
+}
+
+function getPropertyHXType(property, datatype) {
 	if (property.actualtype === "String")
 		return "String";
 	else if (property.actualtype === "Boolean")
@@ -157,7 +187,7 @@ function getPropertyASType(property, datatype) {
 	else if (property.actualtype === "decimal")
 		return "Float";
 	else if (property.actualtype === "DateTime")
-		return "String";
+		return "Date";
 	else if (property.isclass)
 		return property.actualtype;
 	else if (property.isenum)
@@ -188,13 +218,13 @@ function getRequestActions(apiCall, api) {
 
 function getResultActions(apiCall, api) {
 	if (api.name === "Client" && (apiCall.result === "LoginResult" || apiCall.result === "RegisterPlayFabUserResult"))
-		return "					authKey = resultData.SessionTicket != null ? resultData.SessionTicket : authKey;\n" 
-			+ "					MultiStepClientLogin(resultData.SettingsForUser.NeedsAttribution);\n";
+		return "				authKey = resultData.SessionTicket != null ? resultData.SessionTicket : authKey;\n" 
+			+ "				MultiStepClientLogin(resultData.SettingsForUser.NeedsAttribution);\n";
 	else if (api.name === "Client" && apiCall.result === "AttributeInstallResult")
-		return "					// Modify AdvertisingIdType:  Prevents us from sending the id multiple times, and allows automated tests to determine id was sent successfully\n"
-			+ "					PlayFabSettings.AdvertisingIdType += \"_Successful\";\n";
+		return "				// Modify AdvertisingIdType:  Prevents us from sending the id multiple times, and allows automated tests to determine id was sent successfully\n"
+			+ "				PlayFabSettings.AdvertisingIdType += \"_Successful\";\n";
 	else if (api.name === "Client" && apiCall.result === "GetCloudScriptUrlResult")
-		return "					PlayFabSettings.LogicServerURL = resultData.Url;\n";
+		return "				PlayFabSettings.LogicServerURL = resultData.Url;\n";
 	return "";
 }
 
