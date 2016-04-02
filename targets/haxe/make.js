@@ -134,7 +134,7 @@ function getModelPropertyInit(property, datatype) {
     if (property.isclass) {
         if (property.collection) {
             if (property.collection === "array")
-                return "if(data." + property.name + " != null) " + property.name + " = [for(object in data." + property.name + ") new " + property.actualtype + "(object)];";
+                return "if(data." + property.name + " != null) " + property.name + " = [for(object in (data." + property.name + ":Array<Dynamic>)) new " + property.actualtype + "(object)];";
             else if (property.collection === "map")
                 return "if(data." + property.name + " != null) " + property.name + " = [for(field in Reflect.fields(data." + property.name + ")) field => new " + property.actualtype + "(Reflect.field(data." + property.name + ", field))];";
             else
