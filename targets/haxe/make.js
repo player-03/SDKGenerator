@@ -127,7 +127,7 @@ function getModelPropertyDef(property, datatype) {
 		comment += "\n\t */\n\t";
 	}
 	
-	return comment + "var " + property.name + ":" + type + ";";
+	return comment + "public var " + property.name + ":" + type + ";";
 }
 
 function getModelPropertyInit(property, datatype) {
