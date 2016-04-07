@@ -36,6 +36,7 @@ function makeDatatypes(api, sourceDir, apiOutputDir) {
 		}
 		else {
 			modelLocals.needsPlayFabUtil = needsPlayFabUtil(datatype);
+			modelLocals.needsPlayFabMap = needsPlayFabMap(datatype);
 			generatedModel = modelTemplate(modelLocals);
 		}
 		
@@ -47,6 +48,16 @@ function needsPlayFabUtil(datatype) {
 	for (var i in datatype.properties) {
 		var property = datatype.properties[i];
 		if (property.actualtype === "DateTime")
+			return true;
+	}
+	
+	return false;
+}
+
+function needsPlayFabMap(datatype) {
+	for (var i in datatype.properties) {
+		var property = datatype.properties[i];
+		if (property.collection === "map")
 			return true;
 	}
 	
@@ -106,7 +117,7 @@ function getModelPropertyDef(property, datatype) {
 			type = "Array<" + type + ">";
 		}
 		else if (property.collection === "map") {
-			type = "Map<String, " + type + ">";
+			type = "PlayFabMap<" + type + ">";
 		}
 		else {
 			throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
@@ -136,7 +147,7 @@ function getModelPropertyInit(property, datatype) {
             if (property.collection === "array")
                 return "if(data." + property.name + " != null) " + property.name + " = [for(object in (data." + property.name + ":Array<Dynamic>)) new " + property.actualtype + "(object)];";
             else if (property.collection === "map")
-                return "if(data." + property.name + " != null) " + property.name + " = [for(field in Reflect.fields(data." + property.name + ")) field => new " + property.actualtype + "(Reflect.field(data." + property.name + ", field))];";
+                return "if(data." + property.name + " != null) { " + property.name + " = new PlayFabMap(); for(field in Reflect.fields(data." + property.name + ")) " + property.name + "[field] = new " + property.actualtype + "(Reflect.field(data." + property.name + ", field)); };";
             else
                 throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
         }
@@ -149,7 +160,7 @@ function getModelPropertyInit(property, datatype) {
             return property.name + " = data." + property.name + ";";
         }
         else if (property.collection === "map") {
-            return "if(data." + property.name + " != null) " + property.name + " = [for(field in Reflect.fields(data." + property.name + ")) field => Reflect.field(data." + property.name + ", field)];";
+            return "if(data." + property.name + " != null) " + property.name + " = data." + property.name + ";";
         }
         else {
             throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;

@@ -9,7 +9,7 @@ class PlayFab<%- api.name %>API
 <% for(var i in api.calls) { var apiCall = api.calls[i]; %>	public static function <%- apiCall.name %>(request:<%- apiCall.request %>, ?onComplete:<%- apiCall.result %> -> Void, ?onError:PlayFabError -> Void):Void
 	{
 <%- getRequestActions(apiCall, api) %>
-		var requetJson:String = Json.stringify( request );
+		var requestJson:String = Json.stringify( request );
 		
 		var onPostComplete:Dynamic -> PlayFabError -> Void = function(resultData:Dynamic, error:PlayFabError):Void
 		{
@@ -29,7 +29,7 @@ class PlayFab<%- api.name %>API
 			}
 		}
 		
-		PlayFabHTTP.post(<%- getUrlAccessor(apiCall) %>+"<%- apiCall.url %>", requetJson, <%- getAuthParams(apiCall) %>, onPostComplete);
+		PlayFabHTTP.post(<%- getUrlAccessor(apiCall) %>+"<%- apiCall.url %>", requestJson, <%- getAuthParams(apiCall) %>, onPostComplete);
 	}
 	
 <% } %><% if (hasClientOptions) { %>	public static function MultiStepClientLogin(needsAttribution:Bool):Void

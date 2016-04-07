@@ -1,6 +1,7 @@
 package com.playfab.<%- api.name.toLowerCase() %>models;
 
-<% if(needsPlayFabUtil) { %>import com.playfab.PlayFabUtil;
+<% if(needsPlayFabMap) { %>import com.playfab.PlayFabMap;
+<% } %><% if(needsPlayFabUtil) { %>import com.playfab.PlayFabUtil;
 
 <% } %>class <%- datatype.name %>
 {
