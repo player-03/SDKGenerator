@@ -58,7 +58,7 @@ class PlayFabHTTP
 					var replyEnvelope:Dynamic = Json.parse(event.currentTarget.data);
 					error = new PlayFabError(replyEnvelope);
 				}
-				catch (e:Error)
+				catch (e:Dynamic)
 				{
 					error = new PlayFabError({
 						httpCode: "HTTP ERROR:" + gotHttpStatus,
