@@ -27,6 +27,6 @@ abstract PlayFabMap<T>(Dynamic)
 	
 	public inline function delete(key:String):Void
 	{
-		return Reflect.deleteField(this, key);
+		Reflect.deleteField(this, key);
 	}
 }
