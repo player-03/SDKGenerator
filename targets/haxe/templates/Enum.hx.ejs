@@ -1,0 +1,7 @@
+package com.playfab.<%- api.name.toLowerCase() %>models
+
+class <%- datatype.name %>
+{
+<% for(var i=0; i<datatype.enumvalues.length; i++) { var enumprops = datatype.enumvalues[i] %>    public static inline var <%- enumprops.name %>:String = "<%- enumprops.name %>";
+<% } %>
+}

@@ -1,0 +1,12 @@
+package com.playfab;
+
+class PlayFabVersion
+{
+    public static inline var SdkRevision:String = "<%- sdkVersion %>";
+    public static inline var BuildIdentifier:String = "<%- buildIdentifier %>";
+    
+    public static function getVersionString():String
+    {
+        return "Haxe-" + SdkRevision;
+    }
+}

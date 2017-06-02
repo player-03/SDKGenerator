@@ -1,0 +1,27 @@
+package com.playfab;
+
+class PlayFabError
+{
+    public static inline var Unknown:Int = 1;
+    public static inline var NetworkIOError:Int = 2;
+    public static inline var FlashSecurityError:Int = 3;
+    
+<% for(var i=0; i<errorList.length; i++) { var errorProps = errors[errorList[i]] %>    public static inline var <%- errorProps.name %>:Int = <%- errorProps.id %>;
+<% } %>
+    
+    public function new(data:Dynamic=null)
+    {
+        if(data == null) return;
+        httpCode = data.code;
+        httpStatus = data.status;
+        error = data.error;
+        errorCode = data.errorCode;
+        errorMessage = data.errorMessage;
+    }
+    
+    public var httpCode:Int; // HTTP return code
+    public var httpStatus:String; // HTTP status
+    public var error:String; // PlayFab error enum-string
+    public var errorCode:Int; // PlayFab error code
+    public var errorMessage:String; // PlayFab specific error message
+}
