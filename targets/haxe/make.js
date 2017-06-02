@@ -64,6 +64,7 @@ function MakeDatatypes(api, sourceDir, apiOutputDir) {
             generatedModel = enumTemplate(modelLocals);
         } else {
             modelLocals.NeedsPlayFabUtil = NeedsPlayFabUtil(datatype);
+            modelLocals.NeedsPlayFabMap = NeedsPlayFabMap(datatype);
             generatedModel = modelTemplate(modelLocals);
         }
         
@@ -75,6 +76,14 @@ function MakeDatatypes(api, sourceDir, apiOutputDir) {
 function NeedsPlayFabUtil(datatype) {
     for (var i = 0; i < datatype.properties.length; i++)
         if (datatype.properties[i].actualtype === "DateTime")
+            return true;
+    return false;
+}
+
+// A datatype needs map if it contains a map
+function NeedsPlayFabMap(datatype) {
+    for (var i = 0; i < datatype.properties.length; i++)
+        if (datatype.properties[i].collection === "map")
             return true;
     return false;
 }
@@ -127,28 +136,27 @@ function GenerateSimpleFiles(apis, sourceDir, apiOutputDir) {
 }
 
 function GetModelPropertyDef(property, datatype) {
-    var basicType = GetPropertyAsType(property, datatype);
+    var basicType = GetPropertyHaxeType(property, datatype);
 
     if (property.collection) {
         if (property.collection === "array") {
-            return "var " + property.name + ":Array<" + basicType + ">;";
+            return "public var " + property.name + ":Array<" + basicType + ">;";
         }
         else if (property.collection === "map") {
-            return "var " + property.name + ":Dynamic;";
+            return "public var " + property.name + ":PlayFabMap<" + basicType + ">;";
         }
         else {
             throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
         }
     }
     else {
-        var prefix = "var ";
         if (property.optional)
-            prefix = "@:optional var ";
-        return prefix + property.name + ":" + basicType + ";";
+            basicType = "Null<" + basicType + ">";
+        return "public var " + property.name + ":" + basicType + ";";
     }
 }
 
-function GetPropertyAsType(property, datatype) {
+function GetPropertyHaxeType(property, datatype) {
     
     if (property.actualtype === "String")
         return "String";
@@ -187,11 +195,14 @@ function GetModelPropertyInit(tabbing, property, datatype) {
     if (property.isclass) {
         if (property.collection) {
             if (property.collection === "array")
-                return tabbing + "if(data." + property.name + ") { " + property.name + " = new Vector.<" + property.actualtype + ">(); for(var " + property.name + "_iter:int = 0; " + property.name + "_iter < data." + property.name + ".length; " + property.name + "_iter++) { " + property.name + "[" + property.name + "_iter] = new " + property.actualtype + "(data." + property.name + "[" + property.name + "_iter]); }}";
+                return tabbing + "if(data." + property.name + " != null) " + property.name + " = [for(object in (data." + property.name + ":Array<Dynamic>)) new " + property.actualtype + "(object)];";
             else if (property.collection === "map")
-                return tabbing + "if(data." + property.name + ") { " + property.name + " = {}; for(var " + property.name + "_iter:String in data." + property.name + ") { " + property.name + "[" + property.name + "_iter] = new " + property.actualtype + "(data." + property.name + "[" + property.name + "_iter]); }}";
+                return tabbing + "if(data." + property.name + " != null) { " + property.name + " = new PlayFabMap(); for(field in Reflect.fields(data." + property.name + ")) " + property.name + "[field] = new " + property.actualtype + "(Reflect.field(data." + property.name + ", field)); };";
             else
                 throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
+        }
+        else if (property.optional) {
+            return tabbing + "if(data." + property.name + " != null) " + property.name + " = new " + property.actualtype + "(data." + property.name + ");";
         }
         else {
             return tabbing + property.name + " = new " + property.actualtype + "(data." + property.name + ");";
@@ -199,11 +210,10 @@ function GetModelPropertyInit(tabbing, property, datatype) {
     }
     else if (property.collection) {
         if (property.collection === "array") {
-            var asType = GetPropertyAsType(property, datatype);
-            return tabbing + property.name + " = data." + property.name + " ? Vector.<" + asType + ">(data." + property.name + ") : null;";
+            return tabbing + property.name + " = data." + property.name + ";";
         }
         else if (property.collection === "map") {
-            return tabbing + property.name + " = data." + property.name + ";";
+            return tabbing + "if(data." + property.name + " != null) " + property.name + " = data." + property.name + ";";
         }
         else {
             throw "Unknown collection type: " + property.collection + " for " + property.name + " in " + datatype.name;
