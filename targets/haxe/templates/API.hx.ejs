@@ -9,7 +9,7 @@ class PlayFab<%- api.name %>API
 <% for(var i in api.calls) { var apiCall = api.calls[i]; %>    public static function <%- apiCall.name %>(request:<%- apiCall.request %>, ?onComplete:<%- apiCall.result %> -> Void, ?onError:PlayFabError -> Void):Void
     {
 <%- GetRequestActions(apiCall, api) %>
-        var requetJson:String = Json.stringify( request );
+        var requestJson:String = Json.stringify( request );
         
         var onPostComplete:<%- apiCall.result %> -> PlayFabError -> Void = function(resultData:<%- apiCall.result %>, error:PlayFabError):Void
         {
@@ -22,20 +22,21 @@ class PlayFab<%- api.name %>API
             }
             else
             {
-<%- GetResultActions(apiCall, api) %>
+                var result:<%- apiCall.result %> = new <%- apiCall.result %>(resultData);
+<%- getResultActions(apiCall, api) %>                
                 if(onComplete != null)
-                    onComplete(resultData);
+                    onComplete(result);
             }
         }
         
-        PlayFabHTTP.post(<%- GetUrlAccessor(apiCall) %>+"<%- apiCall.url %>", requetJson, <%- GetAuthParams(apiCall) %>, onPostComplete);
+        PlayFabHTTP.post(<%- GetUrlAccessor(apiCall) %>+"<%- apiCall.url %>", requestJson, <%- GetAuthParams(apiCall) %>, onPostComplete);
     }
     
 <% } %><% if (hasClientOptions) { %>    public static function MultiStepClientLogin(needsAttribution:Bool):Void
     {
         if (needsAttribution && !PlayFabSettings.DisableAdvertising && (PlayFabSettings.AdvertisingIdType != null && PlayFabSettings.AdvertisingIdType != "") && (PlayFabSettings.AdvertisingIdValue != null && PlayFabSettings.AdvertisingIdValue != ""))
         {
-            var request:AttributeInstallRequest = {};
+            var request:AttributeInstallRequest = new AttributeInstallRequest();
             if (PlayFabSettings.AdvertisingIdType == PlayFabSettings.AD_TYPE_IDFA)
                 request.Idfa = PlayFabSettings.AdvertisingIdValue;
             else if (PlayFabSettings.AdvertisingIdType == PlayFabSettings.AD_TYPE_ANDROID_ID)

@@ -1,9 +1,18 @@
 package com.playfab.<%- api.name.toLowerCase() %>models;
 
-<% if(NeedsPlayFabUtil) { %>import com.playfab.PlayFabUtil;
+<% if(needsPlayFabMap) { %>import com.playfab.PlayFabMap;
 
-<% } %>typedef <%- datatype.name %> =
+<% } %><% if(needsPlayFabUtil) { %>import com.playfab.PlayFabUtil;
+
+<% } %>class <%- datatype.name %>
 {
-<% for(var i in datatype.properties) { var property = datatype.properties[i] %>    <%- GetModelPropertyDef(property, datatype) %>
-<% } %>
-};
+<% for(var i in datatype.properties) { var property = datatype.properties[i] %>    <%- getPropertyDef(property, datatype) %>
+<% } %>    
+    public function new(?data:Dynamic)
+    {
+        if(data == null)
+            return;
+        
+<% for(var i in datatype.properties) { var property = datatype.properties[i] %>        <%- getPropertyInit(property, datatype) %>
+<% } %>    }
+}

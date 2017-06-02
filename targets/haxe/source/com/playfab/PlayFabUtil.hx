@@ -2,8 +2,7 @@ package com.playfab;
 
 class PlayFabUtil
 {
-    //private static var TimePattern:EReg = ~/(\d+)\-(\d+)\-(\d+)T(\d+):(\d+):(\d+)(\.(\d+))?Z?/x;
-    private static var TimePattern:EReg = ~/\w*(\d+)\w*\-\w*(\d+)\w*\-\w*(\d+)\w*T\w*(\d+)\w*:\w*(\d+)\w*:\w*(\d+)\w*(\.\w*(\d+))?\w*Z?/;
+    private static var TimePattern:EReg = ~/(\d\d\d\d)-?(\d\d)-?(\d\d)[T ](\d\d):(\d\d):(\d\d)(?:\.\d+)?(Z|[+\-]\d\d(?::?\d\d)?|)/;
     
     public static function parseDate(data:String):Date
     {
@@ -23,13 +22,26 @@ class PlayFabUtil
         var minute:Int = Std.parseInt(TimePattern.matched(5));
         var second:Int = Std.parseInt(TimePattern.matched(6));
         
-        if(data.charAt(data.length-1) == "Z")
+        //Retrieve the local time zone.
+        var timeZoneOffset:Float = new Date(1970, 0, 1, 0, 0, 0).getTime();
+        
+        var timeZoneString:String = TimePattern.matched(7);
+        if(timeZoneString != "" && timeZoneString != "Z")
         {
-            return Date.fromTime(DateTools.makeUtc(year, month-1, day, hour, minute, second));
+            timeZoneOffset += Std.parseInt(timeZoneString) * 60 * 60 * 1000;
+            
+            if(timeZoneString.indexOf(":") > 0)
+            {
+                timeZoneString = timeZoneString.substr(timeZoneString.indexOf(":") + 1);
+                timeZoneOffset += Std.parseInt(timeZoneString) * 60 * 1000;
+            }
         }
-        else
-        {
-            return new Date(year, month-1, day, hour, minute, second);
-        }
+        
+        //Month needs to be 0-indexed.
+        var date:Date = new Date(year, month - 1, day, hour, minute, second);
+        
+        date = Date.fromTime(date.getTime() - timeZoneOffset);
+        
+        return date;
     }
 }

@@ -6,6 +6,8 @@
     
     <source path="." />
     
+    <assets path="assets" />
+    
     <haxelib name="openfl" />
     
 </project>

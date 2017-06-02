@@ -12,6 +12,7 @@ import com.playfab.PlayFabServerAPI;
 import com.playfab.PlayFabSettings;
 import com.playfab.PlayFabHTTP;
 import com.playfab.PlayFabError;
+import com.playfab.PlayFabUtil;
 
 import asyncUnitTest.ASyncUnitTestSuite;
 import asyncUnitTest.ASyncUnitTestEvent;
@@ -22,16 +23,12 @@ import haxe.Json;
 
 class PlayFabApiTests extends ASyncUnitTestSuite
 {
-    private static var TITLE_DATA_FILENAME:String;
-    
     private static inline var TEST_STAT_BASE:Int = 10;
     private static inline var TEST_STAT_NAME:String = "str";
     private static inline var CHAR_TEST_TYPE:String = "Test";
     private static inline var TEST_DATA_KEY:String = "testCounter";
     
     // Functional
-    private static var EXEC_ONCE:Bool = true;
-    private static var TITLE_INFO_SET:Bool = false;
     private static var TITLE_CAN_UPDATE_SETTINGS:Bool = false;
     
     // Fixed values provided from testInputs
@@ -48,10 +45,10 @@ class PlayFabApiTests extends ASyncUnitTestSuite
     private var testIntExpected:Int;
     private var testIntActual:Int;
     
-    public function new(titleDataFileName:String, reporter:ASyncUnitTestReporter)
+    public function new(testTitleData:Dynamic, reporter:ASyncUnitTestReporter)
     {
         super(reporter);
-        TITLE_DATA_FILENAME = titleDataFileName;
+        SetTitleInfo(testTitleData);
         
         AddTest("InvalidLogin", InvalidLogin);
         AddTest("LoginOrRegister", LoginOrRegister);
@@ -68,14 +65,6 @@ class PlayFabApiTests extends ASyncUnitTestSuite
     
     override private function SuiteSetUp() : Void
     {
-        var myTextLoader:URLLoader = new URLLoader();
-        myTextLoader.addEventListener(Event.COMPLETE, Wrap1(OnTitleDataLoaded, "TitleData"));
-        myTextLoader.load(new URLRequest(TITLE_DATA_FILENAME));
-    }
-    
-    private function OnTitleDataLoaded(event:Event) : Void
-    {
-        SetTitleInfo(event.target.data);
         SuiteSetUpCompleteHandler();
     }
     
@@ -83,10 +72,8 @@ class PlayFabApiTests extends ASyncUnitTestSuite
     /// PlayFab Title cannot be created from SDK tests, so you must provide your titleId to run unit tests.
     /// (Also, we don't want lots of excess unused titles)
     /// </summary>
-    private static function SetTitleInfo(titleDataString):Bool
+    private static function SetTitleInfo(testTitleData:Dynamic):Void
     {
-        var testTitleData:Dynamic = Json.parse(titleDataString);
-        
         PlayFabSettings.TitleId = testTitleData.titleId;
         PlayFabSettings.DeveloperSecretKey = testTitleData.developerSecretKey;
         TITLE_CAN_UPDATE_SETTINGS = testTitleData.titleCanUpdateSettings.toLowerCase() == "true";
@@ -94,16 +81,6 @@ class PlayFabApiTests extends ASyncUnitTestSuite
         USER_EMAIL = testTitleData.userEmail;
         USER_PASSWORD = testTitleData.userPassword;
         CHAR_NAME = testTitleData.characterName;
-        
-        TITLE_INFO_SET = PlayFabSettings.TitleId != null
-            || PlayFabSettings.TitleId != null
-            || PlayFabSettings.DeveloperSecretKey != null
-            || TITLE_CAN_UPDATE_SETTINGS
-            || USER_NAME != null
-            || USER_EMAIL != null
-            || USER_PASSWORD != null
-            || CHAR_NAME != null;
-        return TITLE_INFO_SET;
     }
     
     /// <summary>
@@ -117,7 +94,7 @@ class PlayFabApiTests extends ASyncUnitTestSuite
         var request:com.playfab.clientmodels.LoginWithEmailAddressRequest = {
             TitleId : PlayFabSettings.TitleId,
             Email : USER_EMAIL,
-            Password : USER_PASSWORD + "INVALID"
+            Password : USER_PASSWORD.length > 20 ? USER_PASSWORD.substr(5) : USER_PASSWORD + "INVALID"
         };
         PlayFabClientAPI.LoginWithEmailAddress(request, Wrap1(InvalidLogin_Success, "Success"), Wrap1(InvalidLogin_Failure, "Fail"));
     }
@@ -262,7 +239,7 @@ class PlayFabApiTests extends ASyncUnitTestSuite
         testIntActual = Reflect.field(result.Data, TEST_DATA_KEY).Value;
         ASyncAssert.AssertEquals(testIntExpected, testIntActual);
         
-        var timeUpdated:Float = Date.fromString(Reflect.field(result.Data, TEST_DATA_KEY).LastUpdated).getTime();
+        var timeUpdated:Float = PlayFabUtil.parseDate(Reflect.field(result.Data, TEST_DATA_KEY).LastUpdated).getTime();
         var now:Float = Date.now().getTime();
         var testMin:Float = now - (5*60*1000);
         var testMax:Float = now + (5*60*1000);
